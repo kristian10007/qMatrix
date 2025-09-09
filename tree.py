@@ -1,14 +1,10 @@
 import pandas as pd
 import numpy as np
 import random
-import itertools
 import heapq
-from typing import List, Tuple
-import seaborn as sns
-import matplotlib.pyplot as plt
+from typing import List
 from tqdm.auto import tqdm
 from joblib import Parallel, delayed
-from sklearn.cluster import KMeans
 
 
 
