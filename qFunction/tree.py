@@ -18,7 +18,7 @@ class FeatureTreeNode:
         self.right = right                # Subtree with features farther from the pivot
 
 
-def build_feature_tree(data, feature_indices=None, progress=None, n_jobs=-1):
+def build_feature_tree(df, feature_indices=None, progress=None, n_jobs=-1):
     """Recursively builds a Vantage-Point tree on the feature space."""
     if feature_indices is None:
         feature_indices = list(range(data.shape[1]))
@@ -32,7 +32,6 @@ def build_feature_tree(data, feature_indices=None, progress=None, n_jobs=-1):
     root_feature = random.choice(feature_indices)
     remaining_features = [f for f in feature_indices if f != root_feature]
 
-    df = pd.DataFrame(data)
 
     scores = Parallel(n_jobs=n_jobs, verbose=0)(
         delayed(q_function)(df, root_feature, f) for f in remaining_features
@@ -48,8 +47,8 @@ def build_feature_tree(data, feature_indices=None, progress=None, n_jobs=-1):
     node = FeatureTreeNode(root_feature, median_score=median_score)
     if progress: progress.update(1)
 
-    node.left = build_feature_tree(data, left_features, progress, n_jobs)
-    node.right = build_feature_tree(data, right_features, progress, n_jobs)
+    node.left = build_feature_tree(df, left_features, progress, n_jobs)
+    node.right = build_feature_tree(df, right_features, progress, n_jobs)
 
     return node
 
@@ -63,8 +62,9 @@ def build_feature_tree_with_progress(data, n_jobs=-1):
     """Entry point to build the feature tree with a progress bar."""
     feature_indices = list(range(data.shape[1]))
     total_nodes = count_total_nodes(feature_indices)
+    df = pd.DataFrame(data)
     with tqdm(total=total_nodes, desc="Building Feature Tree") as progress:
-        tree = build_feature_tree(data, feature_indices, progress, n_jobs=n_jobs)
+        tree = build_feature_tree(df, feature_indices, progress, n_jobs=n_jobs)
     return tree
 
 
