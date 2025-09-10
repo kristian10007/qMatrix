@@ -169,3 +169,7 @@ def create_adjacency_from_knn(
     return adj_matrix
 
 
+def qMatrixUsingTree(data, k=5):
+  tree = build_feature_tree_with_progress(data)
+  knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, data, k=k)
+  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1])
