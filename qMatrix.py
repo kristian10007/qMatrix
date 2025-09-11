@@ -1,5 +1,6 @@
 from qFunction.qFunction import *
 from qFunction.calcTree import qMatrixUsingTree, qMatrixUsingTreeFast
+import qFunction.tree
 import pandas as pd
 import numpy as np
 import sys
@@ -32,6 +33,7 @@ if __name__ == "__main__":
   doLog = False
   useTree = False
   useTreeFast = False
+  useTreeOriginal = False
 
   n = 1
   nextIsOutFile = False
@@ -63,6 +65,10 @@ if __name__ == "__main__":
       useTreeFast = True
       continue
 
+    if a == '--tree-original':
+      useTreeOriginal = True
+      continue
+
     if a == '--log':
       doLog = True
       continue
@@ -91,6 +97,9 @@ if __name__ == "__main__":
     matrix, qf = qMatrixUsingTree(data)
   elif useTreeFast:
     matrix, qf = qMatrixUsingTreeFast(data)
+  elif useTreeOriginal:
+    matrix = qFunction.tree.qMatrixUsingTree(data)
+    qf = None
   else:
     matrix = qMatrix(data)
     qf = None

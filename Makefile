@@ -22,3 +22,7 @@ testResults/qMatrixTreeFast_%: testDataSets/%
 	test -d testResults || mkdir testResults
 	time python3 qMatrix.py -o "$@" "$<" -i patient_ids -i id --tree-fast --log > "$@.log"
   
+testResults/qMatrixTreeOriginal_%: testDataSets/%
+	test -d testResults || mkdir testResults
+	time python3 qMatrix.py -o "$@" "$<" -i patient_ids -i id --tree-original --log > "$@.log"
+  
