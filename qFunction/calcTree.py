@@ -5,7 +5,7 @@ import heapq
 from typing import List
 from tqdm.auto import tqdm
 from joblib import Parallel, delayed
-from qFunction.qFunction import Q
+from qFunction.qFunction import Q, Qfast
 
 
 
@@ -165,6 +165,13 @@ def create_adjacency_from_knn(
 
 def qMatrixUsingTree(data, k=5):
   qf = Q(data)
+  tree = build_feature_tree_with_progress(qf)
+  knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
+  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
+
+
+def qMatrixUsingTreeFast(data, k=5):
+  qf = Qfast(data)
   tree = build_feature_tree_with_progress(qf)
   knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
   return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
