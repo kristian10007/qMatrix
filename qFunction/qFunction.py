@@ -62,3 +62,35 @@ def q_functionNp(df: np.ndarray, col_A: int, col_B: int) -> float:
 
     return numerator / denominator
 
+
+def qMatrix(df: np.ndarray):
+    """Optimized version of computing the Q-matrix.
+    The expensive stuff is done at most (n ( n + 1 ) / 2) times.
+    """
+    assert( isinstance(df, np.ndarray) )
+    assert( len(df.shape) == 2 )
+    nFeatures = df.shape[1]
+    m = np.zeros(shape=(nFeatures, nFeatures))
+
+    setSizes = [ len(set(df[:, j])) for j in range(nFeatures) ]
+
+    def q(i,j):
+      if i == j or setSizes[i] < 1 or setSizes[j] < 1:
+        return 0.0, 0.0
+
+      nPairs = len(set(zip(df[:,i], df[:,j])))
+      q1, q2 = 0.0, 0.0
+      if setSizes[j] >= 2:
+        q1 = (nPairs - setSizes[i]) / (setSizes[i] * (setSizes[j] - 1))
+      if setSizes[i] >= 2:
+        q2 = (nPairs - setSizes[j]) / (setSizes[j] * (setSizes[i] - 1))
+      return q1, q2
+
+    for i in range(nFeatures):
+      for j in range(i + 1):
+        q1, q2 = q(i, j)
+        m[i, j] = q1
+        m[j, i] = q2
+
+    return m
+
