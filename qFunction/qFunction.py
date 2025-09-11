@@ -1,6 +1,7 @@
 import pandas as pd
+import numpy as np
 
-def q_function(df: pd.DataFrame, col_A_name: str, col_B_name: str) -> float:
+def q_functionDf(df: pd.DataFrame, col_A_name: str, col_B_name: str) -> float:
     """
     Calculates the Q-score for two columns, measuring the logical dependency
     of col_B on col_A. A score of 0 indicates perfect functional dependency (A -> B).
@@ -27,4 +28,37 @@ def q_function(df: pd.DataFrame, col_A_name: str, col_B_name: str) -> float:
 
     return numerator / denominator
 
+
+def q_functionNp(df: np.ndarray, col_A: int, col_B: int) -> float:
+    """
+    Calculates the Q-score for two columns, measuring the logical dependency
+    of col_B on col_A. A score of 0 indicates perfect functional dependency (A -> B).
+    """
+    assert( isinstance(df, np.ndarray) )
+    assert( len(df.shape) == 2 )
+    
+    if min(df.shape[0], df.shape[1]) < 1:
+        raise ValueError("Array has to contain at least one element.")
+
+    if min(col_A, col_B < 0) or max(col_A, col_B) >= df.shape[1]:
+        raise ValueError("One or both column index are out of range.")
+
+    if col_A == col_B:
+      return 0.0
+
+    num_unique_A = len(set(df[:,col_A]))
+    num_unique_B = len(set(df[:,col_B]))
+
+    if num_unique_A == 0 or num_unique_B <= 1:
+        return 0.0
+
+    num_observed_pairs = len(set(zip(df[:,col_A], df[:,col_B]))) 
+
+    numerator = num_observed_pairs - num_unique_A
+    denominator = num_unique_A * (num_unique_B - 1)
+
+    if denominator == 0:
+        return 0.0
+
+    return numerator / denominator
 

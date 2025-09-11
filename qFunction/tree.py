@@ -5,6 +5,7 @@ import heapq
 from typing import List
 from tqdm.auto import tqdm
 from joblib import Parallel, delayed
+from qFunction.qFunction import q_functionDf
 
 
 
@@ -34,7 +35,7 @@ def build_feature_tree(df, feature_indices=None, progress=None, n_jobs=-1):
 
 
     scores = Parallel(n_jobs=n_jobs, verbose=0)(
-        delayed(q_function)(df, root_feature, f) for f in remaining_features
+        delayed(q_functionDf)(df, root_feature, f) for f in remaining_features
     )
     scores = list(zip(remaining_features, scores))
     scores.sort(key=lambda x: x[1])
@@ -83,7 +84,7 @@ def knn_features(tree, query_feature, data, k=5):
             return
 
         # 1. Calculate distance from query to the current pivot feature.
-        dist_to_pivot = q_function(data, query_feature, node.feature_index)
+        dist_to_pivot = q_functionDf(data, query_feature, node.feature_index)
 
         # The current search radius is the score of the k-th farthest neighbor found so far.
         tau = -best[0][0] if len(best) == k else float('inf')
