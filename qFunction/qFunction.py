@@ -94,3 +94,162 @@ def qMatrix(df: np.ndarray):
 
     return m
 
+
+class Q:
+  def __init__(self, data):
+    assert( isinstance(data, np.ndarray) )
+    assert( len(data.shape) == 2 )
+    assert( data.shape[0] >= 1 )
+    assert( data.shape[1] >= 1 )
+
+    self.data = data
+    self.nFeatures = data.shape[1]
+    self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=int)
+    self.pairSizes = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=int)
+    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures))
+
+    for i in range(self.nFeatures):
+      self.setSizes[i] = -1
+      for j in range(self.nFeatures):
+        self.pairSizes[i,j] = -1
+        self.qValues[i,j] = None
+
+    self.nRequested = 0
+    self.nSetRequested = 0
+    self.nPairRequested = 0
+    self.nCalculated = 0
+    self.nSetCalculated = 0
+    self.nPairCalculated = 0
+
+  def calc(self, i, j):
+    self.nRequested += 1
+    if np.isnan(self.qValues[i, j]):
+      self.nCalculated += 1
+      q = 0.0
+      if i != j:
+        a = self.setSize(i)
+        b = self.setSize(j)
+        if a >= 1 and b >= 2:
+          r = self.pairSize(i,j)
+          q = (r - a) / (a * (b - 1))
+      self.qValues[i, j] = q
+    return self.qValues[i, j]
+
+  def setSize(self, n):
+    self.nSetRequested += 1
+    if n < 0 or n >= self.nFeatures:
+      return 0
+
+    if self.setSizes[n] < 0:
+      self.nSetCalculated += 1
+      self.setSizes[n] = len(set(self.data[:,n]))
+
+    return self.setSizes[n]
+
+  def pairSize(self, i, j):
+    self.nPairRequested += 1
+    if min(i, j) < 0 or max(i,j) >= self.nFeatures:
+      return 0
+
+    if self.pairSizes[i, j] < 0:
+      self.nPairCalculated += 1
+      s = len(set(zip(self.data[:, i], self.data[:, j])))
+      self.pairSizes[i, j] = s
+
+    return self.pairSizes[i, j]
+
+  def statistics(self):
+    print(f"nRequested = {self.nRequested}")
+    print(f"nSetRequested = {self.nSetRequested}")
+    print(f"nPairRequested = {self.nPairRequested}")
+    print(f"nCalculated = {self.nCalculated}")
+    print(f"nSetCalculated = {self.nSetCalculated}")
+    print(f"nPairCalculated = {self.nPairCalculated}")
+
+    print(f"Optimized Q-matrix would be:")
+    print(f"nCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
+    print(f"nSetCalculated = {self.nFeatures}")
+    print(f"nPairCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
+
+
+
+
+
+
+class Qfast:
+  def __init__(self, data):
+    assert( isinstance(data, np.ndarray) )
+    assert( len(data.shape) == 2 )
+    assert( data.shape[0] >= 1 )
+    assert( data.shape[1] >= 1 )
+
+    self.data = data
+    self.nFeatures = data.shape[1]
+    self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=int)
+    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures))
+
+    for i in range(self.nFeatures):
+      self.setSizes[i] = -1
+      for j in range(self.nFeatures):
+        if i != j:
+          self.qValues[i,j] = None
+
+    self.nRequested = 0
+    self.nSetRequested = 0
+    self.nPairRequested = 0
+    self.nCalculated = 0
+    self.nSetCalculated = 0
+    self.nPairCalculated = 0
+
+  def calc(self, i, j):
+    self.nRequested += 1
+    if np.isnan(self.qValues[i, j]):
+      self.nCalculated += 1
+      q1 = 0.0
+      q2 = 0.0
+      if i != j:
+        a = self.setSize(i)
+        b = self.setSize(j)
+        r = None
+        if a >= 1 and b >= 2:
+          r = self.pairSize(i,j)
+          q1 = (r - a) / (a * (b - 1))
+        if a >= 2 and b >= 1:
+          if r is None:
+            r = self.pairSize(i,j)
+          q2 = (r - b) / (b * (a - 1))
+      self.qValues[i, j] = q1
+      self.qValues[j, i] = q2
+    return self.qValues[i, j]
+
+  def setSize(self, n):
+    self.nSetRequested += 1
+    if n < 0 or n >= self.nFeatures:
+      return 0
+
+    if self.setSizes[n] < 0:
+      self.nSetCalculated += 1
+      self.setSizes[n] = len(set(self.data[:,n]))
+
+    return self.setSizes[n]
+
+  def pairSize(self, i, j):
+    self.nPairRequested += 1
+    if min(i, j) < 0 or max(i,j) >= self.nFeatures:
+      return 0
+
+    self.nPairCalculated += 1
+    return len(set(zip(self.data[:, i], self.data[:, j])))
+
+  def statistics(self):
+    print(f"nRequested = {self.nRequested}")
+    print(f"nSetRequested = {self.nSetRequested}")
+    print(f"nPairRequested = {self.nPairRequested}")
+    print(f"nCalculated = {self.nCalculated}")
+    print(f"nSetCalculated = {self.nSetCalculated}")
+    print(f"nPairCalculated = {self.nPairCalculated}")
+
+    print(f"Optimized Q-matrix would be:")
+    print(f"nCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
+    print(f"nSetCalculated = {self.nFeatures}")
+    print(f"nPairCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
