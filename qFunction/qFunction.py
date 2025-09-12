@@ -109,8 +109,7 @@ class Q:
 
     for i in range(self.nFeatures):
       for j in range(self.nFeatures):
-        if i != j:
-          self.qValues[i,j] = None
+        self.qValues[i,j] = None
 
     self.nRequested = 0
     self.nSetRequested = 0

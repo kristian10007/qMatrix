@@ -133,9 +133,79 @@ def compute_knn_dependency_matrix(tree, qf, k=5):
     return knn_matrix, score_matrix
 
 
+def compute_knn_dependency_matrix_fast(tree, qf, k=5):
+    """Computes k-nearest neighbors and dependency scores for every feature."""
+    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
+    n_features = qf.nFeatures
+
+    for query_feature in tqdm(range(n_features), desc="Computing kNN for all features"):
+        neighbors_with_scores = knn_features(tree, query_feature=query_feature, qf=qf, k=k)
+
+        neighbors = [f for _, f in neighbors_with_scores]
+        scores = [s for s, _ in neighbors_with_scores]
+
+        # Pad results if fewer than k neighbors were found.
+        while len(neighbors) < k:
+            neighbors.append(-1)
+            scores.append(float('inf'))
 
 
-def create_adjacency_from_knn(qf) -> np.ndarray:
+
+
+def compute_knn_dependency_matrix(tree, data, qf, k=5):
+    """Computes k-nearest neighbors and dependency scores for every feature."""
+    n_features = data.shape[1]
+    knn_matrix = []
+    score_matrix = []
+
+    for query_feature in tqdm(range(n_features), desc="Computing kNN for all features"):
+        neighbors_with_scores = knn_features(tree, query_feature=query_feature, qf=qf, k=k)
+
+        neighbors = [f for _, f in neighbors_with_scores]
+        scores = [s for s, _ in neighbors_with_scores]
+
+        # Pad results if fewer than k neighbors were found.
+        while len(neighbors) < k:
+            neighbors.append(-1)
+            scores.append(float('inf'))
+
+        knn_matrix.append(neighbors)
+        score_matrix.append(scores)
+
+    return knn_matrix, score_matrix
+
+
+def create_adjacency_from_knn(
+    knn_matrix: List[List[int]],
+    score_matrix: List[List[float]],
+    n_features: int
+) -> np.ndarray:
+    """
+    Creates a feature dependency adjacency matrix from kNN results.
+    The resulting matrix is asymmetric, as A[i,j] is the dependency score
+    of feature j on i, but not necessarily vice-versa.
+    """
+    # 1. Initialize an empty matrix.
+    adj_matrix = np.zeros((n_features, n_features), dtype=np.float64)
+
+    if not any(knn_matrix):
+        return adj_matrix
+
+    # 2. Prepare indices and scores for efficient vectorized assignment.
+    row_indices = np.arange(n_features).repeat([len(k) for k in knn_matrix])
+    col_indices = np.concatenate([k for k in knn_matrix if k])
+    scores = np.concatenate([s for s in score_matrix if s])
+
+    # Filter out placeholder indices (-1).
+    valid_mask = col_indices != -1
+
+    # 3. Use NumPy's advanced indexing to populate the matrix in one operation.
+    adj_matrix[row_indices[valid_mask], col_indices[valid_mask]] = scores[valid_mask]
+
+    return adj_matrix
+
+
+def create_adjacency_from_knn_fast(qf) -> np.ndarray:
     """
     Creates a feature dependency adjacency matrix from the cached Q-values.
     The resulting matrix is asymmetric, as A[i,j] is the dependency score
@@ -155,11 +225,11 @@ def qMatrixUsingTree(data, k=5, debug=False):
   if debug:
     qf.statistics()
     print("---[ KNN ]-------------------------------------------------------")
-  knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
+  knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, data, qf=qf, k=k)
   if debug:
     qf.statistics()
     print("---[ Matrix ]----------------------------------------------------")
-  return create_adjacency_from_knn(qf), qf
+  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
 
 
 def qMatrixUsingTreeFast(data, k=5, debug=False):
@@ -170,9 +240,9 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
   if debug:
     qf.statistics()
     print("---[ KNN ]-------------------------------------------------------")
-  knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
+  compute_knn_dependency_matrix_fast(tree, qf, k=k)
   if debug:
     qf.statistics()
     print("---[ Matrix ]----------------------------------------------------")
-  return create_adjacency_from_knn(qf), qf
+  return create_adjacency_from_knn_fast(qf), qf
 
