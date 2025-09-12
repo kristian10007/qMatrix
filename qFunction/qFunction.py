@@ -104,15 +104,6 @@ class Q:
 
     self.data = data
     self.nFeatures = data.shape[1]
-    self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=int)
-    self.pairSizes = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=int)
-    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures))
-
-    for i in range(self.nFeatures):
-      self.setSizes[i] = -1
-      for j in range(self.nFeatures):
-        self.pairSizes[i,j] = -1
-        self.qValues[i,j] = None
 
     self.nRequested = 0
     self.nSetRequested = 0
@@ -123,40 +114,31 @@ class Q:
 
   def calc(self, i, j):
     self.nRequested += 1
-    if np.isnan(self.qValues[i, j]):
+    q = 0.0
+    if i != j:
       self.nCalculated += 1
-      q = 0.0
-      if i != j:
-        a = self.setSize(i)
-        b = self.setSize(j)
-        if a >= 1 and b >= 2:
-          r = self.pairSize(i,j)
-          q = (r - a) / (a * (b - 1))
-      self.qValues[i, j] = q
-    return self.qValues[i, j]
+      a = self.setSize(i)
+      b = self.setSize(j)
+      if a >= 1 and b >= 2:
+        r = self.pairSize(i,j)
+        q = (r - a) / (a * (b - 1))
+    return q
 
   def setSize(self, n):
     self.nSetRequested += 1
     if n < 0 or n >= self.nFeatures:
       return 0
 
-    if self.setSizes[n] < 0:
-      self.nSetCalculated += 1
-      self.setSizes[n] = len(set(self.data[:,n]))
-
-    return self.setSizes[n]
+    self.nSetCalculated += 1
+    return len(set(self.data[:,n]))
 
   def pairSize(self, i, j):
     self.nPairRequested += 1
     if min(i, j) < 0 or max(i,j) >= self.nFeatures:
       return 0
 
-    if self.pairSizes[i, j] < 0:
-      self.nPairCalculated += 1
-      s = len(set(zip(self.data[:, i], self.data[:, j])))
-      self.pairSizes[i, j] = s
-
-    return self.pairSizes[i, j]
+    self.nPairCalculated += 1
+    return len(set(zip(self.data[:, i], self.data[:, j])))
 
   def statistics(self):
     print(f"nRequested = {self.nRequested}")
@@ -186,7 +168,7 @@ class Qfast:
     self.data = data
     self.nFeatures = data.shape[1]
     self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=int)
-    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures))
+    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=float)
 
     for i in range(self.nFeatures):
       self.setSizes[i] = -1
