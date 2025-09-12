@@ -4,7 +4,6 @@ import random
 import heapq
 from typing import List
 from tqdm.auto import tqdm
-from joblib import Parallel, delayed
 from qFunction.qFunction import Q, Qfast
 
 
@@ -58,6 +57,7 @@ def count_total_nodes(feature_indices):
 
 def build_feature_tree_with_progress(qf):
     """Entry point to build the feature tree with a progress bar."""
+    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
     feature_indices = list(range(qf.nFeatures))
     total_nodes = count_total_nodes(feature_indices)
     with tqdm(total=total_nodes, desc="Building Feature Tree") as progress:
@@ -70,6 +70,7 @@ def build_feature_tree_with_progress(qf):
 def knn_features(tree, query_feature, qf, k=5):
     """Finds k nearest features using the VP-tree with efficient pruning."""
     # Use a max-heap to store the k-best neighbors found so far.
+    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
     best = []
 
     def search(node):
@@ -110,6 +111,7 @@ def knn_features(tree, query_feature, qf, k=5):
 
 def compute_knn_dependency_matrix(tree, qf, k=5):
     """Computes k-nearest neighbors and dependency scores for every feature."""
+    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
     n_features = qf.nFeatures
     knn_matrix = []
     score_matrix = []
@@ -139,6 +141,7 @@ def create_adjacency_from_knn(qf) -> np.ndarray:
     The resulting matrix is asymmetric, as A[i,j] is the dependency score
     of feature j on i, but not necessarily vice-versa.
     """
+    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
     adj_matrix = qf.qValues
     adj_matrix[np.isnan(adj_matrix)] = 0.0
     return adj_matrix
