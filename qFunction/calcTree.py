@@ -136,18 +136,8 @@ def compute_knn_dependency_matrix(tree, qf, k=5):
 def compute_knn_dependency_matrix_fast(tree, qf, k=5):
     """Computes k-nearest neighbors and dependency scores for every feature."""
     assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
-    n_features = qf.nFeatures
-
-    for query_feature in tqdm(range(n_features), desc="Computing kNN for all features"):
-        neighbors_with_scores = knn_features(tree, query_feature=query_feature, qf=qf, k=k)
-
-        neighbors = [f for _, f in neighbors_with_scores]
-        scores = [s for s, _ in neighbors_with_scores]
-
-        # Pad results if fewer than k neighbors were found.
-        while len(neighbors) < k:
-            neighbors.append(-1)
-            scores.append(float('inf'))
+    for query_feature in tqdm(range(qf.nFeatures), desc="Computing kNN for all features"):
+        knn_features(tree, query_feature=query_feature, qf=qf, k=k)
 
 
 
