@@ -26,11 +26,11 @@ testResults/qMatrixTreeFast_%: testDataSets/%
 .PHONY : fastTest
 fastTest:
 	# ===[ qMatrix ]==========================================================
-	python3 qMatrix.py -i patient_ids -i id --log -op - testDataSets/test_v1.csv
+	python3 qMatrix.py -i patient_ids -i id -o - testDataSets/test_v1.csv
 	#
 	# ===[ qMatrix via tree (original version) ]==============================
-	python3 qMatrix.py -i patient_ids -i id --tree --log -op - testDataSets/test_v1.csv
+	python3 qMatrix.py -i patient_ids -i id --tree -o - testDataSets/test_v1.csv
 	#
 	# ===[ qMatrix via tree (fast version) ]==================================
-	python3 qMatrix.py -i patient_ids -i id --tree-fast --log -op - testDataSets/test_v1.csv
+	python3 qMatrix.py -i patient_ids -i id --tree-fast -o - testDataSets/test_v1.csv
   
