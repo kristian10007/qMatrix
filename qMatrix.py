@@ -150,7 +150,7 @@ if __name__ == "__main__":
       plt.xlim(-110,110)
       plt.ylim(-110,110)
       if outFileNameImage != "-":
-        plt.saveFig(outFileNameImage)
+        plt.savefig(outFileNameImage)
       else:
         plt.show()
 
