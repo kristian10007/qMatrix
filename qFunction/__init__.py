@@ -1,4 +1,5 @@
 from qFunction.qFunction import *
-from qFunction.tree import qMatrixUsingTree
+from qFunction.calcTree import qMatrixUsingTree, qMatrixUsingTreeFast
+from qFunction.projection import projectFeatures
 
 
