@@ -147,26 +147,32 @@ def create_adjacency_from_knn(qf) -> np.ndarray:
     return adj_matrix
 
 
-def qMatrixUsingTree(data, k=5):
+def qMatrixUsingTree(data, k=5, debug=False):
   qf = Q(data)
-  print("---[ Build Tree ]------------------------------------------------")
+  if debug:
+    print("---[ Build Tree ]------------------------------------------------")
   tree = build_feature_tree_with_progress(qf)
-  qf.statistics()
-  print("---[ KNN ]-------------------------------------------------------")
+  if debug:
+    qf.statistics()
+    print("---[ KNN ]-------------------------------------------------------")
   knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
-  qf.statistics()
-  print("---[ Matrix ]----------------------------------------------------")
+  if debug:
+    qf.statistics()
+    print("---[ Matrix ]----------------------------------------------------")
   return create_adjacency_from_knn(qf), qf
 
 
-def qMatrixUsingTreeFast(data, k=5):
+def qMatrixUsingTreeFast(data, k=5, debug=False):
   qf = Qfast(data)
-  print("---[ Build Tree ]------------------------------------------------")
+  if debug:
+    print("---[ Build Tree ]------------------------------------------------")
   tree = build_feature_tree_with_progress(qf)
-  qf.statistics()
-  print("---[ KNN ]-------------------------------------------------------")
+  if debug:
+    qf.statistics()
+    print("---[ KNN ]-------------------------------------------------------")
   knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
-  qf.statistics()
-  print("---[ Matrix ]----------------------------------------------------")
+  if debug:
+    qf.statistics()
+    print("---[ Matrix ]----------------------------------------------------")
   return create_adjacency_from_knn(qf), qf
 

@@ -172,9 +172,9 @@ if __name__ == "__main__":
   columns = [cleanupName(n) for n in list(data.columns)]
   data = np.array(data)
   if useTree:
-    matrix, qf = qMatrixUsingTree(data)
+    matrix, qf = qMatrixUsingTree(data, debug=doLog)
   elif useTreeFast:
-    matrix, qf = qMatrixUsingTreeFast(data)
+    matrix, qf = qMatrixUsingTreeFast(data, debug=doLog)
   else:
     matrix = qMatrix(data)
     qf = None
