@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 from qFunction.qFunction import Q, Qfast
 
 
-
+# ---[ Used in original and in fast version ]-------------------------------
 
 class FeatureTreeNode:
     """Node for the Vantage-Point (VP) feature tree."""
@@ -109,6 +109,10 @@ def knn_features(tree, query_feature, qf, k=5):
 
 
 
+
+
+# ---[ Used in original version only ]--------------------------------------
+
 def compute_knn_dependency_matrix(tree, qf, k=5):
     """Computes k-nearest neighbors and dependency scores for every feature."""
     assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
@@ -131,15 +135,6 @@ def compute_knn_dependency_matrix(tree, qf, k=5):
         score_matrix.append(scores)
 
     return knn_matrix, score_matrix
-
-
-def compute_knn_dependency_matrix_fast(tree, qf, k=5):
-    """Computes k-nearest neighbors and dependency scores for every feature."""
-    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
-    for query_feature in tqdm(range(qf.nFeatures), desc="Computing kNN for all features"):
-        knn_features(tree, query_feature=query_feature, qf=qf, k=k)
-
-
 
 
 def compute_knn_dependency_matrix(tree, data, qf, k=5):
@@ -195,18 +190,6 @@ def create_adjacency_from_knn(
     return adj_matrix
 
 
-def create_adjacency_from_knn_fast(qf) -> np.ndarray:
-    """
-    Creates a feature dependency adjacency matrix from the cached Q-values.
-    The resulting matrix is asymmetric, as A[i,j] is the dependency score
-    of feature j on i, but not necessarily vice-versa.
-    """
-    assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
-    adj_matrix = qf.qValues
-    adj_matrix[np.isnan(adj_matrix)] = 0.0
-    return adj_matrix
-
-
 def qMatrixUsingTree(data, k=5, debug=False):
   qf = Q(data)
   if debug:
@@ -222,6 +205,12 @@ def qMatrixUsingTree(data, k=5, debug=False):
   return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
 
 
+
+
+
+
+# ---[ Used in fast version only ]------------------------------------------
+
 def qMatrixUsingTreeFast(data, k=5, debug=False):
   qf = Qfast(data)
   if debug:
@@ -229,10 +218,23 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
   tree = build_feature_tree_with_progress(qf)
   if debug:
     qf.statistics()
+
     print("---[ KNN ]-------------------------------------------------------")
-  compute_knn_dependency_matrix_fast(tree, qf, k=k)
+
+  """Computes k-nearest neighbors and dependency scores for every feature."""
+  for query_feature in tqdm(range(qf.nFeatures), desc="Computing kNN for all features"):
+      knn_features(tree, query_feature=query_feature, qf=qf, k=k)
+
   if debug:
     qf.statistics()
     print("---[ Matrix ]----------------------------------------------------")
-  return create_adjacency_from_knn_fast(qf), qf
+
+  """
+  Creates a feature dependency adjacency matrix from the cached Q-values.
+  The resulting matrix is asymmetric, as A[i,j] is the dependency score
+  of feature j on i, but not necessarily vice-versa.
+  """
+  adj_matrix = qf.qValues
+  adj_matrix[np.isnan(adj_matrix)] = 0.0
+  return adj_matrix, qf
 
