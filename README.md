@@ -82,7 +82,7 @@ F,-20.814775754304826,-42.97004109959493
 
 ## Show the points for the projection of the features as image
 ```
-python3 qMatrix.py testDataSets/test_v1.csv -op images/example.png -i id
+python3 qMatrix.py testDataSets/test_v1.csv -oi images/example.png -i id
 ```
 ![example plot of feature dependencies](images/example.png)
 
