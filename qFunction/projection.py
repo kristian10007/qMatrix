@@ -1,3 +1,6 @@
+import numpy as np
+from matplotlib import pyplot as plt
+
 def qMatrixToForceScalers(qMatrix):
     scalers = qMatrix - 0.5
     for n in range(scalers.shape[0]):
