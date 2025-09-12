@@ -21,4 +21,9 @@ testResults/qMatrixTree_%: testDataSets/%
 testResults/qMatrixTreeFast_%: testDataSets/%
 	test -d testResults || mkdir testResults
 	time python3 qMatrix.py -o "$@" "$<" -i patient_ids -i id --tree-fast --log -oi "$@.pdf" -op "$@_points.csv" > "$@.log"
+
+
+.PHONY : fastTest
+fastTest:
+	python3 qMatrix.py -i patient_ids -i id --tree-fast --log -op - testDataSets/test_v1.csv
   
