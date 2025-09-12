@@ -105,6 +105,13 @@ class Q:
     self.data = data
     self.nFeatures = data.shape[1]
 
+    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=float)
+
+    for i in range(self.nFeatures):
+      for j in range(self.nFeatures):
+        if i != j:
+          self.qValues[i,j] = None
+
     self.nRequested = 0
     self.nSetRequested = 0
     self.nPairRequested = 0
@@ -122,6 +129,10 @@ class Q:
       if a >= 1 and b >= 2:
         r = self.pairSize(i,j)
         q = (r - a) / (a * (b - 1))
+
+    if self.qValues[i,j] is None:
+      self.qValues[i,j] = q
+
     return q
 
   def setSize(self, n):

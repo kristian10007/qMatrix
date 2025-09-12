@@ -133,46 +133,37 @@ def compute_knn_dependency_matrix(tree, qf, k=5):
 
 
 
-def create_adjacency_from_knn(
-    knn_matrix: List[List[int]],
-    score_matrix: List[List[float]],
-    n_features: int
-) -> np.ndarray:
+def create_adjacency_from_knn(qf) -> np.ndarray:
     """
-    Creates a feature dependency adjacency matrix from kNN results.
+    Creates a feature dependency adjacency matrix from the cached Q-values.
     The resulting matrix is asymmetric, as A[i,j] is the dependency score
     of feature j on i, but not necessarily vice-versa.
     """
-    # 1. Initialize an empty matrix.
-    adj_matrix = np.zeros((n_features, n_features), dtype=np.float64)
-
-    if not any(knn_matrix):
-        return adj_matrix
-
-    # 2. Prepare indices and scores for efficient vectorized assignment.
-    row_indices = np.arange(n_features).repeat([len(k) for k in knn_matrix])
-    col_indices = np.concatenate([k for k in knn_matrix if k])
-    scores = np.concatenate([s for s in score_matrix if s])
-
-    # Filter out placeholder indices (-1).
-    valid_mask = col_indices != -1
-
-    # 3. Use NumPy's advanced indexing to populate the matrix in one operation.
-    adj_matrix[row_indices[valid_mask], col_indices[valid_mask]] = scores[valid_mask]
-
+    adj_matrix = qf.qValues
+    adj_matrix[np.isnan(adj_matrix)] = 0.0
     return adj_matrix
 
 
 def qMatrixUsingTree(data, k=5):
   qf = Q(data)
+  print("---[ Build Tree ]------------------------------------------------")
   tree = build_feature_tree_with_progress(qf)
+  qf.statistics()
+  print("---[ KNN ]-------------------------------------------------------")
   knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
-  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
+  qf.statistics()
+  print("---[ Matrix ]----------------------------------------------------")
+  return create_adjacency_from_knn(qf), qf
 
 
 def qMatrixUsingTreeFast(data, k=5):
   qf = Qfast(data)
+  print("---[ Build Tree ]------------------------------------------------")
   tree = build_feature_tree_with_progress(qf)
+  qf.statistics()
+  print("---[ KNN ]-------------------------------------------------------")
   knn_matrix, score_matrix = compute_knn_dependency_matrix(tree, qf, k=k)
-  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
+  qf.statistics()
+  print("---[ Matrix ]----------------------------------------------------")
+  return create_adjacency_from_knn(qf), qf
 
