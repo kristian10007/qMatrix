@@ -20,8 +20,8 @@ def q_functionDf(df: pd.DataFrame, col_A_name: str, col_B_name: str) -> float:
 
     num_observed_pairs = df[[col_A_name, col_B_name]].dropna().drop_duplicates().shape[0]
 
-    numerator = num_observed_pairs - num_unique_A
-    denominator = num_unique_A * (num_unique_B - 1)
+    numerator = (num_observed_pairs / num_unique_A) - 1
+    denominator = num_unique_B - 1
 
     if denominator == 0:
         return 0.0
@@ -54,8 +54,8 @@ def q_functionNp(df: np.ndarray, col_A: int, col_B: int) -> float:
 
     num_observed_pairs = len(set(zip(df[:,col_A], df[:,col_B]))) 
 
-    numerator = num_observed_pairs - num_unique_A
-    denominator = num_unique_A * (num_unique_B - 1)
+    numerator = (num_observed_pairs / num_unique_A) - 1
+    denominator = num_unique_B - 1
 
     if denominator == 0:
         return 0.0
@@ -81,9 +81,9 @@ def qMatrix(df: np.ndarray):
       nPairs = len(set(zip(df[:,i], df[:,j])))
       q1, q2 = 0.0, 0.0
       if setSizes[j] >= 2:
-        q1 = (nPairs - setSizes[i]) / (setSizes[i] * (setSizes[j] - 1))
+        q1 = ((nPairs / setSizes[i]) - 1) / (setSizes[j] - 1)
       if setSizes[i] >= 2:
-        q2 = (nPairs - setSizes[j]) / (setSizes[j] * (setSizes[i] - 1))
+        q2 = ((nPairs / setSizes[j]) - 1) / (setSizes[i] - 1)
       return q1, q2
 
     for i in range(nFeatures):
@@ -127,7 +127,7 @@ class Q:
       b = self.setSize(j)
       if a >= 1 and b >= 2:
         r = self.pairSize(i,j)
-        q = (r - a) / (a * (b - 1))
+        q = ((r / a) - 1) / (b - 1)
 
     if self.qValues[i,j] is None:
       self.qValues[i,j] = q
@@ -205,11 +205,11 @@ class Qfast:
         r = None
         if a >= 1 and b >= 2:
           r = self.pairSize(i,j)
-          q1 = (r - a) / (a * (b - 1))
+          q1 = ((r / a) - 1) / (b - 1)
         if a >= 2 and b >= 1:
           if r is None:
             r = self.pairSize(i,j)
-          q2 = (r - b) / (b * (a - 1))
+          q2 = ((r / b) - 1) / (a - 1)
       self.qValues[i, j] = q1
       self.qValues[j, i] = q2
     return self.qValues[i, j]
