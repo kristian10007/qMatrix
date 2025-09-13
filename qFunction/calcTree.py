@@ -67,7 +67,7 @@ def build_feature_tree_with_progress(qf):
 
 
 
-def knn_features(tree, query_feature, qf, k=5):
+def knn_features(tree, query_feature, qf, k=5, ignoreResult=False):
     """Finds k nearest features using the VP-tree with efficient pruning."""
     # Use a max-heap to store the k-best neighbors found so far.
     assert( isinstance(qf, Q) or isinstance(qf, Qfast) )
@@ -104,7 +104,8 @@ def knn_features(tree, query_feature, qf, k=5):
             search(second)
 
     search(tree)
-    return sorted([(-s, f) for s, f in best])
+    if not ignoreResult:
+      return sorted([(-s, f) for s, f in best])
 
 
 
@@ -223,7 +224,7 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
 
   """Computes k-nearest neighbors and dependency scores for every feature."""
   for query_feature in tqdm(range(qf.nFeatures), desc="Computing kNN for all features"):
-      knn_features(tree, query_feature=query_feature, qf=qf, k=k)
+      knn_features(tree, query_feature=query_feature, qf=qf, k=k, ignoreResult=True)
 
   if debug:
     qf.statistics()
