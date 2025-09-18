@@ -53,6 +53,9 @@ def showHelp():
   print(" -i columnName      : Ignores the given column during the computation.")
   print("                      This parameter can be given multiple times.")
   print("")
+  print(" -numbered          : Use own data loader for faster table access. (default)")
+  print(" -pandas            : Use pandas data loader for comparability.")
+  print("")
   print(" inputTable         : A file name of a CSV-file. This first line is")
   print("                      expected to be column names.")
 
