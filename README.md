@@ -7,31 +7,49 @@ This matrix contains the Q-values describing how tight two columns of a table ar
 ## Command line parameters
 ```
 qMatrix.py [--help]
-           [-o outputTable]
-           [-op outputPointList] [-oi outputImage] [--coolDown c]
-           [-i columnName]
-           [--tree] [--tree-fast] [--log]
+           [-o=outputTable]
+           [-tree] [-tree-fast] [-log] [-debug]
+           [-op=outputPointList] [-oi=outputImage] [-cool-down=c]
+           [-numbered] [-pandas]
+           [-i=columnName]
            inputTable
 ```
 
 
+### General
+
  - **--help**: shows the help of the program.
 
- - **-o outputTable**: writes the Q-matrix as CSV-file. If the file name is "-" then the data will be print to stdout.
+ - **-debug**: prints debug information about timing.
 
- - **-op outputPointList**: writes the position of the projected feature points to a CSV-file. If the file name is "-" then the data will be print to stdout.
+### Q-matrix generation
 
- - **-oi outputImage**: writes the projected feature points to an image-file (PNG or PDF). If the file name is "-" then the image is shown in a window.
+ - **-o=outputTable**: writes the Q-matrix as CSV-file. If the file name is "-" then the data will be print to stdout.
 
- - **--coolDown c**: The coolDown value for the projection phase. Default is 0.4. The value is expected to be 0 <= c < 1. Smaller values will tend more to be a line and the probability that bijective dependent features land at the same point increases. Greater values tend more to be a cloud.
+ - **-tree**: uses the tree approach instead computing the Q-matrix brute force.
 
- - **--tree**: uses the tree approach instead computing the Q-matrix brute force.
+ - **-tree-fast**: uses the fast version of the tree approach instead computing the Q-matrix brute force.
 
- - **--tree-fast**: uses the fast version of the tree approach instead computing the Q-matrix brute force.
+ - **-log**: prints debug information after computing the data.
 
- - **--log**: prints debug information after computing the data.
+### dependency projection
 
- - **-i columnName**: Ignores the given column during the computation. This parameter can be given multiple times.
+ - **-op=outputPointList**: writes the position of the projected feature points to a CSV-file. If the file name is "-" then the data will be print to stdout.
+
+ - **-oi=outputImage**: writes the projected feature points to an image-file (PNG or PDF). If the file name is "-" then the image is shown in a window.
+
+ - **-cool-down=c**: The coolDown value for the projection phase. Default is 0.4. The value is expected to be 0 <= c < 1. Smaller values will tend more to be a line and the probability that bijective dependent features land at the same point increases. Greater values tend more to be a cloud.
+
+
+### data loader
+
+ - **-numbered**: Use own data loader for faster table access. (default)
+
+ - **-pandas**: Use pandas data loader for comparability.
+
+### data input
+
+ - **-i=columnName**: Ignores the given column during the computation. This parameter can be given multiple times.
 
  - **inputTable**: A file name of a CSV-file. This first line is expected to be column names.
 

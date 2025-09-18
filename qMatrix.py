@@ -13,16 +13,17 @@ import sys
 
 def showHelp():
   print(f"{sys.argv[0]} [--help]")
-  print("          [-o outputTable]")
+  print("          [-o=outputTable]")
   print("          [-tree] [-tree-fast] [-log]")
-  print("          [-op outputPointList] [-oi outputImage] [-cool-down float]")
-  print("          [-i columnName] inputTable")
+  print("          [-op=outputPointList] [-oi=outputImage] [-cool-down=float]")
+  print("          [-numbered] [-pandas]")
+  print("          [-i=columnName] inputTable")
   print("")
-  print("---[ General ]-----------------------------------------------------")
+  print("---[ General ]--------------------------------------------------------------")
   print(" --help             : shows the help of the program.")
   print("")
-  print("---[ Q-matrix generation ]-----------------------------------------")
-  print(" -o outputTable     : writes the Q-matrix as CSV-file. If the file")
+  print("---[ Q-matrix generation ]--------------------------------------------------")
+  print(" -o=outputTable     : writes the Q-matrix as CSV-file. If the file")
   print("                      name is \"-\" then the data will be print to stdout.")
   print("")
   print(" -tree              : uses the tree approach instead computing the")
@@ -33,28 +34,31 @@ def showHelp():
   print("")
   print(" -log               : prints debug information after computing the data.")
   print("")
-  print("---[ dependency projection ]---------------------------------------")
-  print(" -op outputPointList: writes the position of the projected feature")
+  print("---[ dependency projection ]------------------------------------------------")
+  print(" -op=outputPointList: writes the position of the projected feature")
   print("                      points to a CSV-file. If the file name is \"-\"")
   print("                      then the data will be print to stdout.")
   print("")
-  print(" -oi outputImage    : writes the projected feature points to an image-file")
+  print(" -oi=outputImage    : writes the projected feature points to an image-file")
   print("                      (PNG or PDF). If the file name is \"-\" then the")
   print("                      image is shown in a window.")
   print("")
-  print(" -cool-down c       : The coolDown value for the projection phase.")
+  print(" -cool-down=c       : The coolDown value for the projection phase.")
   print("                      Default is 0.4. The value is expected to be")
   print("                      0 <= c < 1. Smaller values will tend more to be")
   print("                      a line and the probability that bijective dependent")
   print("                      features land at the same point increases.")
   print("                      Greater values tend more to be a cloud.")
   print("")
-  print("---[ data input ]--------------------------------------------------")
-  print(" -i columnName      : Ignores the given column during the computation.")
-  print("                      This parameter can be given multiple times.")
+  print("---[ data loader ]----------------------------------------------------------")
   print("")
   print(" -numbered          : Use own data loader for faster table access. (default)")
+  print("")
   print(" -pandas            : Use pandas data loader for comparability.")
+  print("")
+  print("---[ data input ]-----------------------------------------------------------")
+  print(" -i=columnName      : Ignores the given column during the computation.")
+  print("                      This parameter can be given multiple times.")
   print("")
   print(" inputTable         : A file name of a CSV-file. This first line is")
   print("                      expected to be column names.")
@@ -90,12 +94,15 @@ def checkForOldFlags(name):
 
   for (o, n) in replacements:
     if name == o:
-      print(f"The parameter '{o}' is old and will be removed soon.")
+      print(f"The parameter '{o}' was removed.")
       print(f"Please use '{n}' instead.")
+      showHelp()
+      exit(1)
 
 def timeStep(tStart, title):
   now = time.time()
-  print(f"{title}: {now - tStart}s")
+  if debug:
+    print(f"{title}: {now - tStart}s", file=sys.stderr)
   return now
 
 if __name__ == "__main__":
@@ -109,58 +116,38 @@ if __name__ == "__main__":
   useTreeFast = False
   useNumberedData = True
   coolDown = 0.4
+  debug = False
 
   n = 1
-  nextIsOutFile = False
-  nextIsOutFileImage = False
-  nextIsOutFilePoints = False
-  nextIsColumnName = False
-  nextIsCoolDown = False
   for a in sys.argv[1:]:
-    if nextIsCoolDown:
-      nextIsCoolDown = False
-      coolDown = float(a)
-      if coolDown < 0 or coolDown >= 1:
-        print(f"coolDown is expected to be >= 0 and < 1 but {coolDown} was given.")
-        exit(1)
-      continue
-
-    if nextIsOutFile:
-      nextIsOutFile = False
-      outFileName = a
-      continue
-
-    if nextIsOutFileImage:
-      nextIsOutFileImage = False
-      outFileNameImage = a
-      continue
-
-    if nextIsOutFilePoints:
-      nextIsOutFilePoints = False
-      outFileNamePoints = a
-      continue
-
-    if nextIsColumnName:
-      nextIsColumnName = False
-      dropColumns.append(a)
-      continue
-
     checkForOldFlags(a)
 
     if a == '-o':
-      nextIsOutFile = True
+      outFileName = "-"
+      continue
+
+    if a.startswith('-o='):
+      outFileName = a[3:]
       continue
 
     if a == '-oi':
-      nextIsOutFileImage = True
+      outFileNameImage = "-"
+      continue
+
+    if a.startswith('-oi='):
+      outFileNameImage = a[4:]
       continue
 
     if a == '-op':
-      nextIsOutFilePoints = True
+      outFileNamePoints = "-"
       continue
 
-    if a == '-i':
-      nextIsColumnName = True
+    if a.startswith('-op='):
+      outFileNamePoints = a[4:]
+      continue
+
+    if a.startswith('-i='):
+      dropColumns.append(a[3:])
       continue
 
     if a == '-numbered':
@@ -171,20 +158,27 @@ if __name__ == "__main__":
       useNumberedData = False
       continue
 
-    if a == "--coolDown" or a == '-cool-down':
-      nextIsCoolDown = True
+    if a.startswith('-cool-down='):
+      coolDown = float(a[11:])
+      if coolDown < 0 or coolDown >= 1:
+        print(f"coolDown is expected to be >= 0 and < 1 but {coolDown} was given.")
+        exit(1)
       continue
 
-    if a == '--tree' or a == '-tree':
+    if a == '-tree':
       useTree = True
       continue
 
-    if a == '--tree-fast' or a == '-tree-fast':
+    if a == '-tree-fast':
       useTreeFast = True
       continue
 
-    if a == '--log' or a == '-log':
+    if a == '-log':
       doLog = True
+      continue
+
+    if a == '-debug':
+      debug = True
       continue
 
     if a == '--help' or a == '-h':
