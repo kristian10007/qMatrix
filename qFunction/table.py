@@ -30,7 +30,6 @@ class TableLoader:
       if self.heading is None:
         self.heading = [name for name in row if name not in self.ignoreColumns]
         sets = [(None if name in self.ignoreColumns else {}) for name in row]
-        print(f"Got {len(sets)} features.")
         continue
 
       rowData = []
