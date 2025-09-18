@@ -104,7 +104,7 @@ if __name__ == "__main__":
   doLog = False
   useTree = False
   useTreeFast = False
-  useNumberedData = False
+  useNumberedData = True
   coolDown = 0.4
 
   n = 1
@@ -162,6 +162,10 @@ if __name__ == "__main__":
 
     if a == '-numbered':
       useNumberedData = True
+      continue
+
+    if a == '-pandas':
+      useNumberedData = False
       continue
 
     if a == "--coolDown" or a == '-cool-down':
