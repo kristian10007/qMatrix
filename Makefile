@@ -12,15 +12,15 @@ test:
 
 testResults/qMatrix_%: testDataSets/%
 	test -d testResults || mkdir testResults
-	time python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
+	python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
 
 testResults/qMatrixTree_%: testDataSets/%
 	test -d testResults || mkdir testResults
-	time python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -tree -log -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
+	python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -tree -log -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
   
 testResults/qMatrixTreeFast_%: testDataSets/%
 	test -d testResults || mkdir testResults
-	time python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -tree-fast -log -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
+	python3 qMatrix.py "-o=$@" "$<" -i=patient_ids -i=id -tree-fast -log -debug "-oi=$@.pdf" "-op=$@_points.csv" > "$@.log" 2>&1
 
 
 clean:
