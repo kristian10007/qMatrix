@@ -110,6 +110,8 @@ if __name__ == "__main__":
   outFileName = None
   outFileNameImage = None
   outFileNamePoints = None
+  outFileNameDendrogram = None
+  outFileNameUmap = None
   dropColumns = []
   doLog = False
   useTree = False
@@ -144,6 +146,22 @@ if __name__ == "__main__":
 
     if a.startswith('-op='):
       outFileNamePoints = a[4:]
+      continue
+
+    if a == '-od':
+      outFileNameDendrogram = "-"
+      continue
+
+    if a.startswith('-od='):
+      outFileNameDendrogram = a[4:]
+      continue
+
+    if a == '-ou':
+      outFileNameUmap = "-"
+      continue
+
+    if a.startswith('-ou='):
+      outFileNameUmap = a[4:]
       continue
 
     if a.startswith('-i='):
@@ -244,12 +262,37 @@ if __name__ == "__main__":
         writePoints(projection, columns, sys.stdout)
 
     if outFileNameImage is not None:
+      plt.title("Projection")
       plt.scatter(projection[:,0], projection[:,1])
       plt.xlim(-110,110)
       plt.ylim(-110,110)
+
+      for i, feat in enumerate(columns):
+        plt.text(projection[i, 0] + 0.1, projection[i, 1] + 0.1, feat)
+
       if outFileNameImage != "-":
         plt.savefig(outFileNameImage)
       else:
         plt.show()
+
+  if outFileNameDendrogram is not None:
+    from qFunction.dendrogram import plot_manual_dendrogram
+    p = plot_manual_dendrogram(matrix, columns)
+    if outFileNameDendrogram != "-":
+      p.savefig(outFileNameDendrogram)
+    else:
+      p.show()
+    
+  if outFileNameUmap is not None:
+    from qFunction.umap_projection import visualize_umap_embeddings
+    umap_params = {}
+    workflow_type = "single"
+    umap_fusion_params = None # dict()
+    plot_title = "UMAP embedding of features",
+    if outFileNameUmap != "-":
+      visualize_umap_embeddings(columns, umap_params, matrix, workflow_type, umap_fusion_params, plot_title, outFileNameUmap)
+    else:
+      visualize_umap_embeddings(columns, umap_params, matrix, workflow_type, umap_fusion_params, plot_title)
+    
 
 timeStep(tStartTotal, "Total")
