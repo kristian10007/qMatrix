@@ -18,7 +18,7 @@ testResults/%/brute-force.ok: testDataSets/%.csv
 	mkdir -p "$p"
 	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
 	$(eval config := -debug -i=patient_ids -i=id)
-	python3 qMatrix.py $(config) $(outParam) "$<" 2>&1 | tee "$p/log.txt"
+	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
 
 testResults/%/tree.ok: testDataSets/%.csv
@@ -26,7 +26,7 @@ testResults/%/tree.ok: testDataSets/%.csv
 	mkdir -p "$p"
 	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
 	$(eval config := -tree -log -debug -i=patient_ids -i=id)
-	python3 qMatrix.py $(config) $(outParam) "$<" 2>&1 | tee "$p/log.txt"
+	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
   
 testResults/%/tree-fast.ok: testDataSets/%.csv
@@ -34,7 +34,7 @@ testResults/%/tree-fast.ok: testDataSets/%.csv
 	mkdir -p "$p"
 	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
 	$(eval config := -tree-fast -log -debug -i=patient_ids -i=id)
-	python3 qMatrix.py $(config) $(outParam) "$<" 2>&1 | tee "$p/log.txt"
+	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
 
 clean:
