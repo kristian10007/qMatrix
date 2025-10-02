@@ -172,7 +172,7 @@ def create_adjacency_from_knn(
     of feature j on i, but not necessarily vice-versa.
     """
     # 1. Initialize an empty matrix.
-    adj_matrix = np.zeros((n_features, n_features), dtype=np.float64)
+    adj_matrix = np.ones((n_features, n_features), dtype=np.float64)
 
     if not any(knn_matrix):
         return adj_matrix
@@ -236,6 +236,6 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
   of feature j on i, but not necessarily vice-versa.
   """
   adj_matrix = qf.qValues
-  adj_matrix[np.isnan(adj_matrix)] = 0.0
+  adj_matrix[np.isnan(adj_matrix)] = 1.0
   return adj_matrix, qf
 
