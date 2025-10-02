@@ -16,7 +16,7 @@ testResults/%.csv.ok: testDataSets/%.csv
 testResults/%/brute-force.ok: testDataSets/%.csv
 	$(eval p := testResults/$*/brute-force)
 	mkdir -p "$p"
-	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
+	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf" "-omnb=$p/ModularityImage.pdf")
 	$(eval config := -debug -i=patient_ids -i=id)
 	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
@@ -24,7 +24,7 @@ testResults/%/brute-force.ok: testDataSets/%.csv
 testResults/%/tree.ok: testDataSets/%.csv
 	$(eval p := testResults/$*/tree)
 	mkdir -p "$p"
-	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
+	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf" "-omnb=$p/ModularityImage.pdf")
 	$(eval config := -tree -log -debug -i=patient_ids -i=id)
 	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
@@ -32,7 +32,7 @@ testResults/%/tree.ok: testDataSets/%.csv
 testResults/%/tree-fast.ok: testDataSets/%.csv
 	$(eval p := testResults/$*/tree-fast)
 	mkdir -p "$p"
-	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf")
+	$(eval outParam := "-o=$p/qMatrix.csv" "-oi=$p/projection.pdf" "-op=$p/projection.csv" "-od=$p/dendrogram.pdf" "-ou=$p/umap.pdf" "-omnb=$p/ModularityImage.pdf")
 	$(eval config := -tree-fast -log -debug -i=patient_ids -i=id)
 	python3 qMatrix.py $(config) $(outParam) "$<" > "$p/log.txt" 2>&1
 	touch "$@"
