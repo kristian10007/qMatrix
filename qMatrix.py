@@ -15,7 +15,7 @@ def showHelp():
   print(f"{sys.argv[0]} [--help]")
   print("          [-o=outputTable]")
   print("          [-tree] [-tree-fast] [-log]")
-  print("          [-op=outputPointList] [-oi=outputImage] [-cool-down=float]")
+  print("          [-op=outputPointList] [-oi=outputImage] [-omnb=outputModularityImage] [-cool-down=float]")
   print("          [-numbered] [-pandas]")
   print("          [-i=columnName] inputTable")
   print("")
@@ -112,6 +112,7 @@ if __name__ == "__main__":
   outFileNamePoints = None
   outFileNameDendrogram = None
   outFileNameUmap = None
+  outFileNameModularityNotebook = None
   dropColumns = []
   doLog = False
   useTree = False
@@ -162,6 +163,14 @@ if __name__ == "__main__":
 
     if a.startswith('-ou='):
       outFileNameUmap = a[4:]
+      continue
+
+    if a == '-omnb':
+      outFileNameModularityNotebook = "-"
+      continue
+      
+    if a.startswith('-omnb='):
+      outFileNameModularityNotebook = a[6:]
       continue
 
     if a.startswith('-i='):
@@ -294,5 +303,12 @@ if __name__ == "__main__":
     else:
       visualize_umap_embeddings(columns, umap_params, matrix, workflow_type, umap_fusion_params, plot_title)
     
+  if outFileNameModularityNotebook is not None:
+    from qFunction.modularity_notebook_projection import visualize_modularity_embedding_notebook
+    visualize_modularity_embedding_notebook(
+        feature_names=columns,
+        q_matrix=matrix,
+        save_path=None if outFileNameModularityNotebook == "-" else outFileNameModularityNotebook
+    )
 
 timeStep(tStartTotal, "Total")
