@@ -188,6 +188,9 @@ def create_adjacency_from_knn(
     # 3. Use NumPy's advanced indexing to populate the matrix in one operation.
     adj_matrix[row_indices[valid_mask], col_indices[valid_mask]] = scores[valid_mask]
 
+    r = np.array(range(n_features))
+    adj_matrix[r,r] = 0
+
     return adj_matrix
 
 
@@ -237,5 +240,7 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
   """
   adj_matrix = qf.qValues
   adj_matrix[np.isnan(adj_matrix)] = 1.0
+  r = np.array(range(qf.nFeatures))
+  adj_matrix[r,r] = 0
   return adj_matrix, qf
 
