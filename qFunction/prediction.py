@@ -51,3 +51,45 @@ def predict2ndLayer(q):
 
   return matrix
 
+
+def predictFunctions(qf, layer2Matrix, columns, logicDepLimit=0.2):
+  layer2Names = []
+  nFeatures = qf.nFeatures
+  assert(nFeatures == len(columns))
+
+  for i in range(nFeatures):
+    for j in range(i):
+      layer2Names.append('{ "' + columns[j] + '", "' + columns[i] + '" }')
+
+  functions = []
+  for i in range(nFeatures):
+    for j in range(nFeatures):
+      if i == j:
+        continue
+
+      elif qf.qValues[i,j] < logicDepLimit:
+        functions.append( (qf.qValues[i, j], '{ "' + columns[i] + '" }', columns[j]) )
+
+  p = -1
+  for i in range(nFeatures):
+    for j in range(i):
+      p += 1
+      for k in range(nFeatures):
+        if k == i or k == j:
+          continue
+
+        if qf.qValues[i, k] == 0 or qf.qValues[j, k] == 0:
+          continue
+
+        if layer2Matrix[p, k] < logicDepLimit:
+          functions.append( (layer2Matrix[p, k], layer2Names[p], columns[k]) )
+
+  return functions
+
+def showFunctions(functions, file):
+  for (q, s, d) in functions:
+    if q == 0.0:
+      file.write(s + ' -> { "' + d + '" }\n')
+    else:
+      file.write(s + ' ~> { "' + d + '" }  (' + str(q) + ')\n')
+

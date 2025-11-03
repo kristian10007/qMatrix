@@ -51,8 +51,10 @@ def showHelp():
   print("                      Greater values tend more to be a cloud.")
   print("")
   print("---[ prediction ]-----------------------------------------------------------")
-  print(" -layer2=outputTable : predicts the second layer. Actual q-Values for")
+  print(" -layer2=outputTable   : predicts the second layer. Actual q-Values for")
   print("                       q((a,b), c) are less ore equal to the predicted values.")
+  print("")
+  print(" -functions=outputTable : predicts the functions for a -> b and (a,b) -> c.")
   print("")
   print("---[ data loader ]----------------------------------------------------------")
   print("")
@@ -127,6 +129,7 @@ if __name__ == "__main__":
   outFileNameUmap = None
   outFileNameModularityNotebook = None
   outFileName2ndlayer = None
+  outFileNameFunctions = None
   dropColumns = []
   doLog = False
   useTree = False
@@ -193,6 +196,14 @@ if __name__ == "__main__":
 
     if a.startswith('-layer2='):
       outFileName2ndlayer = a[8:]
+      continue
+
+    if a == '-functions':
+      outFileNameFunctions = "-"
+      continue
+
+    if a.startswith('-functions='):
+      outFileNameFunctions = a[11:]
       continue
 
     if a.startswith('-i='):
@@ -332,13 +343,25 @@ if __name__ == "__main__":
         save_path=None if outFileNameModularityNotebook == "-" else outFileNameModularityNotebook
     )
 
-  if outFileName2ndlayer is not None:
-    from qFunction.prediction import predict2ndLayer
+  if outFileName2ndlayer is not None or outFileNameFunctions is not None:
+    from qFunction.prediction import predict2ndLayer, predictFunctions, showFunctions
+    print("* predict 2nd layer", file=sys.stderr)
     matrix = predict2ndLayer(qf)
-    if outFileName2ndlayer != "-":
-      with open(outFileName2ndlayer, "wt") as f:
-        writeMatrix2(matrix, columns, f)
-    else:
-      writeMatrix2(matrix, columns, sys.stdout)
+    if outFileName2ndlayer is not None:
+      if outFileName2ndlayer != "-":
+        with open(outFileName2ndlayer, "wt") as f:
+          writeMatrix2(matrix, columns, f)
+      else:
+        writeMatrix2(matrix, columns, sys.stdout)
 
+    if outFileNameFunctions is not None:
+      print("* predict functions", file=sys.stderr)
+      functions = predictFunctions(qf, matrix, columns)
+      if outFileNameFunctions != "-":
+        with open(outFileNameFunctions, "wt") as f:
+          showFunctions(functions, f)
+      else:
+        showFunctions(functions, sys.stdout)
+
+print("* done", file=sys.stderr)
 timeStep(tStartTotal, "Total")

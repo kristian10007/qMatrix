@@ -206,7 +206,9 @@ def qMatrixUsingTree(data, k=5, debug=False):
   if debug:
     qf.statistics()
     print("---[ Matrix ]----------------------------------------------------")
-  return create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1]), qf
+  adj_matrix = create_adjacency_from_knn(knn_matrix, score_matrix, data.shape[1])
+  qf.qValues = adj_matrix
+  return adj_matrix, qf
 
 
 
@@ -242,5 +244,6 @@ def qMatrixUsingTreeFast(data, k=5, debug=False):
   adj_matrix[np.isnan(adj_matrix)] = 1.0
   r = np.array(range(qf.nFeatures))
   adj_matrix[r,r] = 0
+  qf.qValues = adj_matrix
   return adj_matrix, qf
 
