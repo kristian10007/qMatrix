@@ -31,7 +31,7 @@ def predict2ndLayer(q):
     if a == nRows:
       return 0.0
 
-    # Jut to be complete: if there is no pair then there is nothing to show
+    # Just to be complete: if there is no pair then there is nothing to show
     # that this is not a function. Therefore it is a function.
     # But: how is this possible in a non empty table?
     if a < 1:
