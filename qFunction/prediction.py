@@ -37,6 +37,7 @@ def predict2ndLayer(q):
     if a < 1:
       return 0.0
 
+    t = min(t, a * b)
     # When there was no shortcut then we have to calculate.
     return ((t / a) - 1) / (b - 1)
 
