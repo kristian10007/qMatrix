@@ -50,6 +50,10 @@ def showHelp():
   print("                      features land at the same point increases.")
   print("                      Greater values tend more to be a cloud.")
   print("")
+  print("---[ prediction ]-----------------------------------------------------------")
+  print(" -layer2=outputTable : predicts the second layer. Actual q-Values for")
+  print("                       q((a,b), c) are less ore equal to the predicted values.")
+  print("")
   print("---[ data loader ]----------------------------------------------------------")
   print("")
   print(" -numbered          : Use own data loader for faster table access. (default)")
@@ -76,6 +80,15 @@ def cleanupName(name):
 def writeMatrix(matrix, columns, f):
   print("," + ",".join(columns), file=f)
   for row, c in zip(matrix, columns):
+    print(",".join([c] + [f"{v}" for v in row]), file=f)
+  
+def writeMatrix2(matrix, columns, f):
+  print("," + ",".join(columns), file=f)
+  pColumns = []
+  for i in range(len(columns)):
+    for j in range(i):
+      pColumns.append(f"'{columns[i]}|{columns[j]}'")
+  for row, c in zip(matrix, pColumns):
     print(",".join([c] + [f"{v}" for v in row]), file=f)
   
 def writePoints(matrix, columns, f):
@@ -113,6 +126,7 @@ if __name__ == "__main__":
   outFileNameDendrogram = None
   outFileNameUmap = None
   outFileNameModularityNotebook = None
+  outFileName2ndlayer = None
   dropColumns = []
   doLog = False
   useTree = False
@@ -171,6 +185,14 @@ if __name__ == "__main__":
       
     if a.startswith('-omnb='):
       outFileNameModularityNotebook = a[6:]
+      continue
+
+    if a == '-layer2':
+      outFileName2ndlayer = "-"
+      continue
+
+    if a.startswith('-layer2='):
+      outFileName2ndlayer = a[8:]
       continue
 
     if a.startswith('-i='):
@@ -242,8 +264,7 @@ if __name__ == "__main__":
   elif useTreeFast:
     matrix, qf = qMatrixUsingTreeFast(data, debug=doLog)
   else:
-    matrix = qMatrix(data)
-    qf = None
+    matrix, qf = qMatrix(data)
   del data
 
   tStart = timeStep(tStart, "Compute Q-Matrix")
@@ -310,5 +331,14 @@ if __name__ == "__main__":
         q_matrix=matrix,
         save_path=None if outFileNameModularityNotebook == "-" else outFileNameModularityNotebook
     )
+
+  if outFileName2ndlayer is not None:
+    from qFunction.prediction import predict2ndLayer
+    matrix = predict2ndLayer(qf)
+    if outFileName2ndlayer != "-":
+      with open(outFileName2ndlayer, "wt") as f:
+        writeMatrix2(matrix, columns, f)
+    else:
+      writeMatrix2(matrix, columns, sys.stdout)
 
 timeStep(tStartTotal, "Total")

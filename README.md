@@ -10,6 +10,7 @@ qMatrix.py [--help]
            [-o=outputTable]
            [-tree] [-tree-fast] [-log] [-debug]
            [-op=outputPointList] [-oi=outputImage] [-cool-down=c]
+           [-layer2=outputTable]
            [-numbered] [-pandas]
            [-i=columnName]
            inputTable
@@ -40,6 +41,8 @@ qMatrix.py [--help]
 
  - **-cool-down=c**: The coolDown value for the projection phase. Default is 0.4. The value is expected to be 0 <= c < 1. Smaller values will tend more to be a line and the probability that bijective dependent features land at the same point increases. Greater values tend more to be a cloud.
 
+### Layer prediction
+- **-layer2=outputTable**: predicts the second layer. Actual q-Values for q((a,b), c) are less ore equal to the predicted values.
 
 ### data loader
 

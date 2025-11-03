@@ -64,52 +64,24 @@ def q_functionNp(df: np.ndarray, col_A: int, col_B: int) -> float:
 
 
 def qMatrix(df: np.ndarray):
-    """Optimized version of computing the Q-matrix.
-    The expensive stuff is done at most (n ( n + 1 ) / 2) times.
-    """
-    assert( isinstance(df, np.ndarray) )
-    assert( len(df.shape) == 2 )
-    nFeatures = df.shape[1]
-    m = np.zeros(shape=(nFeatures, nFeatures))
-
-    setSizes = [ len(set(df[:, j])) for j in range(nFeatures) ]
-
-    def q(i,j):
-      if i == j or setSizes[i] < 1 or setSizes[j] < 1:
-        return 0.0, 0.0
-
-      nPairs = len(set(zip(df[:,i], df[:,j])))
-      q1, q2 = 0.0, 0.0
-      if setSizes[j] >= 2:
-        q1 = ((nPairs / setSizes[i]) - 1) / (setSizes[j] - 1)
-      if setSizes[i] >= 2:
-        q2 = ((nPairs / setSizes[j]) - 1) / (setSizes[i] - 1)
-      return q1, q2
-
-    for i in range(nFeatures):
-      for j in range(i + 1):
-        q1, q2 = q(i, j)
-        m[i, j] = q1
-        m[j, i] = q2
-
-    return m
+  qf = QFunction(df)
+  return qf.qValues, qf
 
 
-class Q:
+
+class QBase:
   def __init__(self, data):
     assert( isinstance(data, np.ndarray) )
     assert( len(data.shape) == 2 )
     assert( data.shape[0] >= 1 )
     assert( data.shape[1] >= 1 )
-
     self.data = data
     self.nFeatures = data.shape[1]
+    self.nRows = data.shape[0]
 
     self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=float)
-
-    for i in range(self.nFeatures):
-      for j in range(self.nFeatures):
-        self.qValues[i,j] = None
+    self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=float) - 1
+    self.pairSizes = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=float) - 1
 
     self.nRequested = 0
     self.nSetRequested = 0
@@ -118,34 +90,38 @@ class Q:
     self.nSetCalculated = 0
     self.nPairCalculated = 0
 
-  def calc(self, i, j):
-    self.nRequested += 1
-    q = 0.0
-    if i != j:
-      self.nCalculated += 1
-      a = self.setSize(i)
-      b = self.setSize(j)
-      if a >= 1 and b >= 2:
-        r = self.pairSize(i,j)
-        q = ((r / a) - 1) / (b - 1)
+    for i in range(self.nFeatures):
+      for j in range(self.nFeatures):
+        self.qValues[i,j] = None
 
-    if self.qValues[i,j] is None:
-      self.qValues[i,j] = q
 
-    return q
-
-  def setSize(self, n):
+  def setSize(self, n, useBuffer=True):
     self.nSetRequested += 1
     if n < 0 or n >= self.nFeatures:
       return 0
 
+    if useBuffer:
+      if self.setSizes[n] < 0:
+        self.nSetCalculated += 1
+        self.setSizes[n] = len(set(self.data[:,n]))
+      return self.setSizes[n]
+
     self.nSetCalculated += 1
     return len(set(self.data[:,n]))
 
-  def pairSize(self, i, j):
+  def pairSize(self, i, j, useBuffer=True):
     self.nPairRequested += 1
     if min(i, j) < 0 or max(i,j) >= self.nFeatures:
       return 0
+
+    if useBuffer:
+      if self.pairSizes[i,j] < 0:
+        self.nPairCalculated += 1
+        s = len(set(zip(self.data[:, i], self.data[:, j])))
+        self.pairSizes[i,j] = s
+        self.pairSizes[j,i] = s
+
+      return self.pairSizes[i,j]
 
     self.nPairCalculated += 1
     return len(set(zip(self.data[:, i], self.data[:, j])))
@@ -164,34 +140,34 @@ class Q:
     print(f"nPairCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
 
 
-
-
-
-
-class Qfast:
+class Q(QBase):
   def __init__(self, data):
-    assert( isinstance(data, np.ndarray) )
-    assert( len(data.shape) == 2 )
-    assert( data.shape[0] >= 1 )
-    assert( data.shape[1] >= 1 )
+    super().__init__(data)
 
-    self.data = data
-    self.nFeatures = data.shape[1]
-    self.setSizes = np.zeros(shape=(self.nFeatures, ), dtype=int)
-    self.qValues = np.zeros(shape=(self.nFeatures, self.nFeatures), dtype=float)
+  def calc(self, i, j):
+    self.nRequested += 1
+    q = 0.0
+    if i != j:
+      self.nCalculated += 1
+      a = self.setSize(i, False)
+      b = self.setSize(j, False)
+      if a >= 1 and b >= 2:
+        r = self.pairSize(i, j, False)
+        q = ((r / a) - 1) / (b - 1)
 
-    for i in range(self.nFeatures):
-      self.setSizes[i] = -1
-      for j in range(self.nFeatures):
-        if i != j:
-          self.qValues[i,j] = None
+    if np.isnan(self.qValues[i,j]):
+      self.qValues[i,j] = q
 
-    self.nRequested = 0
-    self.nSetRequested = 0
-    self.nPairRequested = 0
-    self.nCalculated = 0
-    self.nSetCalculated = 0
-    self.nPairCalculated = 0
+    return q
+
+
+
+
+
+
+class Qfast(QBase):
+  def __init__(self, data):
+    super().__init__(data)
 
   def calc(self, i, j):
     self.nRequested += 1
@@ -214,34 +190,44 @@ class Qfast:
       self.qValues[j, i] = q2
     return self.qValues[i, j]
 
-  def setSize(self, n):
-    self.nSetRequested += 1
-    if n < 0 or n >= self.nFeatures:
-      return 0
 
-    if self.setSizes[n] < 0:
-      self.nSetCalculated += 1
-      self.setSizes[n] = len(set(self.data[:,n]))
 
-    return self.setSizes[n]
 
-  def pairSize(self, i, j):
-    self.nPairRequested += 1
-    if min(i, j) < 0 or max(i,j) >= self.nFeatures:
-      return 0
+class QFunction(QBase):
+  def __init__(self, data):
+    super().__init__(data)
 
-    self.nPairCalculated += 1
-    return len(set(zip(self.data[:, i], self.data[:, j])))
+    def q(i,j):
+      si = self.setSize(i)
+      sj = self.setSize(j)
 
-  def statistics(self):
-    print(f"nRequested = {self.nRequested}")
-    print(f"nSetRequested = {self.nSetRequested}")
-    print(f"nPairRequested = {self.nPairRequested}")
-    print(f"nCalculated = {self.nCalculated}")
-    print(f"nSetCalculated = {self.nSetCalculated}")
-    print(f"nPairCalculated = {self.nPairCalculated}")
+      if i == j or si < 1 or sj < 1:
+        return 0.0, 0.0
 
-    print(f"Optimized Q-matrix would be:")
-    print(f"nCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
-    print(f"nSetCalculated = {self.nFeatures}")
-    print(f"nPairCalculated = {(self.nFeatures * (self.nFeatures - 1)) / 2}")
+      if si == self.nRows and sj == self.nRows:
+        return 0.0, 0.0
+
+      self.nCalculated += 1
+      nPairs = self.pairSize(i, j)
+      q1, q2 = 0.0, 0.0
+      if sj >= 2 and si < self.nRows:
+        q1 = ((nPairs / si) - 1) / (sj - 1)
+
+      if si >= 2 and sj < self.nRows:
+        q2 = ((nPairs / sj) - 1) / (si - 1)
+      return q1, q2
+
+    for i in range(self.nFeatures):
+      for j in range(self.nFeatures):
+        q1, q2 = q(i, j)
+        self.qValues[i,j] = q1
+        self.qValues[j,i] = q2
+
+  def calc(self, i, j):
+    self.nRequested += 1
+    return self.qValues[i,j]
+
+
+
+
+

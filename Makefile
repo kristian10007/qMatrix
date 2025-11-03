@@ -42,11 +42,11 @@ clean:
 
 fastTest:
 	# ===[ qMatrix ]==========================================================
-	python3 qMatrix.py -i=patient_ids -i=id -o=- testDataSets/test_v1.csv
+	python3 qMatrix.py -i=patient_ids -i=id -o=- testDataSets/test_v1.csv -layer2=-
 	#
 	# ===[ qMatrix via tree (original version) ]==============================
-	python3 qMatrix.py -i=patient_ids -i=id -tree -o=- testDataSets/test_v1.csv
+	python3 qMatrix.py -i=patient_ids -i=id -tree -o=- testDataSets/test_v1.csv -layer2=-
 	#
 	# ===[ qMatrix via tree (fast version) ]==================================
-	python3 qMatrix.py -i=patient_ids -i=id -tree-fast -o=- testDataSets/test_v1.csv
+	python3 qMatrix.py -i=patient_ids -i=id -tree-fast -o=- testDataSets/test_v1.csv -layer2=-
   
