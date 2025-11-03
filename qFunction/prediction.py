@@ -37,7 +37,11 @@ def predict2ndLayer(q):
     if a < 1:
       return 0.0
 
-    t = min(t, a * b)
+    # If there are more rows in the table than possible entries for the
+    # relation then all connections are possible.
+    if t > a * b:
+      return 1.0
+
     # When there was no shortcut then we have to calculate.
     return ((t / a) - 1) / (b - 1)
 
